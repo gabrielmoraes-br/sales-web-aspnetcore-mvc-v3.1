@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ namespace SalesWeb.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" }); ;
             }
 
             var seller = await _context.Seller
@@ -43,7 +44,7 @@ namespace SalesWeb.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (seller == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" }); ;
             }
 
             return View(seller);
@@ -78,13 +79,13 @@ namespace SalesWeb.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" }); ;
             }
 
             var seller = await _context.Seller.FindAsync(id);
             if (seller == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" }); ;
             }
 
             List<Department> departmens = _departmentService.FindAll();
@@ -101,7 +102,7 @@ namespace SalesWeb.Controllers
         {
             if (id != seller.Id)
             {
-                throw new NotFoundException("Id not found");
+                return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
             }
 
             if (ModelState.IsValid)
@@ -111,16 +112,9 @@ namespace SalesWeb.Controllers
                     _context.Update(seller);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException e)
+                catch (ApplicationException e)
                 {
-                    if (!SellerExists(seller.Id))
-                    {
-                        throw new DbConcurrencyExpection(e.Message);
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return RedirectToAction(nameof(Error), new { message = e.Message });
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -132,7 +126,7 @@ namespace SalesWeb.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
             var seller = await _context.Seller
@@ -140,7 +134,7 @@ namespace SalesWeb.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (seller == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
             return View(seller);
@@ -160,6 +154,16 @@ namespace SalesWeb.Controllers
         private bool SellerExists(int id)
         {
             return _context.Seller.Any(e => e.Id == id);
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+            return View(viewModel);
         }
     }
 }
