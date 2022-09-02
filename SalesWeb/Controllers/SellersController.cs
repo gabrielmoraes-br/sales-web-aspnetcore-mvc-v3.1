@@ -9,6 +9,7 @@ using SalesWeb.Data;
 using SalesWeb.Models;
 using SalesWeb.Models.ViewModels;
 using SalesWeb.Services;
+using SalesWeb.Services.Exceptions;
 
 namespace SalesWeb.Controllers
 {
@@ -38,6 +39,7 @@ namespace SalesWeb.Controllers
             }
 
             var seller = await _context.Seller
+                .Include(obj => obj.Department)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (seller == null)
             {
@@ -84,7 +86,10 @@ namespace SalesWeb.Controllers
             {
                 return NotFound();
             }
-            return View(seller);
+
+            List<Department> departmens = _departmentService.FindAll();
+            SellerFormViewModel viewModel = new SellerFormViewModel { Seller = seller, Departments = departmens };
+            return View(viewModel);
         }
 
         // POST: Sellers/Edit/5
@@ -96,7 +101,7 @@ namespace SalesWeb.Controllers
         {
             if (id != seller.Id)
             {
-                return NotFound();
+                throw new NotFoundException("Id not found");
             }
 
             if (ModelState.IsValid)
@@ -106,11 +111,11 @@ namespace SalesWeb.Controllers
                     _context.Update(seller);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException e)
                 {
                     if (!SellerExists(seller.Id))
                     {
-                        return NotFound();
+                        throw new DbConcurrencyExpection(e.Message);
                     }
                     else
                     {
@@ -131,6 +136,7 @@ namespace SalesWeb.Controllers
             }
 
             var seller = await _context.Seller
+                .Include(obj => obj.Department)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (seller == null)
             {
