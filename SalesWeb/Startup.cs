@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SalesWeb.Services;
 using Microsoft.EntityFrameworkCore;
 using SalesWeb.Data;
 
@@ -32,6 +33,7 @@ namespace SalesWeb
                     builder.MigrationsAssembly("SalesWeb")));
 
             services.AddScoped<SeedingService>();
+            services.AddScoped<DepartmentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,7 +43,6 @@ namespace SalesWeb
             {
                 app.UseDeveloperExceptionPage();
                 seedingService.Seed();
-                 
             }
             else
             {
