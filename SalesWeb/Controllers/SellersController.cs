@@ -145,9 +145,16 @@ namespace SalesWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var seller = await _context.Seller.FindAsync(id);
-            _context.Seller.Remove(seller);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var seller = await _context.Seller.FindAsync(id);
+                _context.Seller.Remove(seller);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return RedirectToAction(nameof(Error), new IntegrityException("Can't delete a seller with sales"));
+            }
             return RedirectToAction(nameof(Index));
         }
 
