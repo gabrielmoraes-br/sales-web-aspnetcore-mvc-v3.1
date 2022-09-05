@@ -51,9 +51,9 @@ namespace SalesWeb.Controllers
         }
 
         // GET: Sellers/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAll();
+            var departments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel { Departments = departments };
             return View(viewModel);
         }
@@ -63,7 +63,7 @@ namespace SalesWeb.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email,BirthDay,BaseSalary,DepartmentId")] Seller seller)
+        public async Task<IActionResult> Create([Bind("Id,Name,Email,BirthDate,BaseSalary,DepartmentId")] Seller seller)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace SalesWeb.Controllers
                 return RedirectToAction(nameof(Error), new { message = "Id not found" }); ;
             }
 
-            List<Department> departmens = _departmentService.FindAll();
+            List<Department> departmens = await _departmentService.FindAllAsync();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = seller, Departments = departmens };
             return View(viewModel);
         }
@@ -98,7 +98,7 @@ namespace SalesWeb.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,BirthDay,BaseSalary,DepartmentId")] Seller seller)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,BirthDate,BaseSalary,DepartmentId")] Seller seller)
         {
             if (id != seller.Id)
             {
